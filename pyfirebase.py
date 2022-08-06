@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-
+Developed by Gh0st666
 """
 
 try:
