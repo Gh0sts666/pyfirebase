@@ -77,7 +77,7 @@ def postExploit(url,data):
 	elif result == 404:
 		os.system("clear")
 		echo(text, red, bold)
-		echo("Not found!", red, bold)
+		echo("Not Found!", red, bold)
 	elif result == 401:
 		os.system("clear")
 		echo(text, blue, bold)
@@ -94,7 +94,7 @@ def main():
 	-b --brute   Bruteforce URL path
 	-p --post    POST data
 	"""
-	parser = argparse.ArgumentParser()
+	parser  = argparse.ArgumentParser()
 	parser.add_argument("-u", "--url", help="Firebase URL", required=True, dest="url")
 	parser.add_argument("-b", "--brute", dest="txt_file")
 	parser.add_argument("-p", "--post", help="Post data to target", dest="payload")
@@ -114,11 +114,14 @@ def main():
 			time.sleep(3)
 			os.system("clear && python3 pyfirebase.py -h")
 		
-		if payload.startswith("{") and payload.endswith("}"):
-			postExploit(URL, payload)
+		if payload == None:
+			pass
 		else:
-			os.system("clear")
-			echo("Wrong data format!\nExample: {'data':'test'}", red, bold)
+			if payload.startswith("{") and payload.endswith("}"):
+				postExploit(URL, payload)
+			else:
+				os.system("clear")
+				echo("Wrong data format!\nExample: {'data':'test'}", red, bold)
 		
 		if txtFile == None:
 			pass
