@@ -63,7 +63,7 @@ def checkInternet(timeout):
 
 
 def postExploit(url,data):
-	req    = requests.post(url,data=data)
+	req    = requests.put(url,data=data)
 	result = req.status_code
 	text   = req.json
 	if result   == 200:
